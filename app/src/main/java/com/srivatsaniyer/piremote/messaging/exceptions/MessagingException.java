@@ -1,0 +1,15 @@
+package com.srivatsaniyer.piremote.messaging.exceptions;
+
+/**
+ * Created by sriiyer on 9/23/17.
+ */
+
+public class MessagingException extends Exception {
+    public MessagingException(String reason, Throwable cause) {
+        super(reason, cause);
+    }
+
+    public MessagingException(String reason) {
+        super(reason);
+    }
+}
