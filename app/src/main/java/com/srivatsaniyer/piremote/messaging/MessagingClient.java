@@ -2,7 +2,8 @@ package com.srivatsaniyer.piremote.messaging;
 
 import android.util.Log;
 
-import com.srivatsaniyer.piremote.messaging.exceptions.MessageParseException;
+import com.srivatsaniyer.piremote.messaging.exceptions.InvalidMessageStructure;
+import com.srivatsaniyer.piremote.messaging.exceptions.MessagingException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,15 +26,6 @@ public class MessagingClient {
             }
         };
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    }
-
-    public static MessagingClient discover() {
-        try {
-            return new MessagingClient("localhost");
-        } catch (IOException e) {
-            Log.i(TAG, "No clients found.");
-        }
-        return null;
     }
 
     public void writeMessage(Message msg) {
