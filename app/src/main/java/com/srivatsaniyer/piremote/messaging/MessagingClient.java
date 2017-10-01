@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.reflect.Type;
 import java.net.Socket;
 
 /**
@@ -40,8 +41,8 @@ public class MessagingClient {
         writer.flush();
     }
 
-    public <T> Message<T> readMessage(Class<T> clazz) throws IOException, MessageParseException {
-        return Message.<T>read(reader, clazz);
+    public <T> Message<T> readMessage(Type type) throws MessagingException {
+        return Message.<T>read(reader, type);
     }
 
     public void close() throws IOException {
