@@ -1,5 +1,8 @@
 package com.srivatsaniyer.piremote.messaging;
 
+import android.util.Log;
+
+import com.google.gson.Gson;
 import com.srivatsaniyer.piremote.messaging.exceptions.BadOperation;
 import com.srivatsaniyer.piremote.messaging.exceptions.InvalidMessageStructure;
 import com.srivatsaniyer.piremote.messaging.exceptions.MessagingException;
@@ -7,6 +10,11 @@ import com.srivatsaniyer.piremote.messaging.exceptions.RequiredFieldsMissing;
 import com.srivatsaniyer.piremote.messaging.exceptions.SchemaValidationFailed;
 import com.srivatsaniyer.piremote.messaging.exceptions.WaitTimeoutError;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +22,7 @@ import java.util.Map;
  * Created by thrustmaster on 9/30/17.
  */
 
-class MessageUtils {
+public class MessageUtils {
     public static <X> void throwExceptionFromMessage(Message<X> msg) throws MessagingException {
         String err = msg.getHeaders().get("RES");
         if ("OK".equalsIgnoreCase(err)) {
@@ -42,5 +50,28 @@ class MessageUtils {
             throw new MessagingException("Invalid ACK message.");
         }
         throwExceptionFromMessage(msg);
+    }
+
+    public static ServerSpecification discover() {
+        byte[] msg = "QUERY".getBytes(Charset.forName("UTF-8"));
+        try {
+            InetAddress host = InetAddress.getByName("224.108.73.1");
+            int port = 23034;
+            DatagramSocket socket = new DatagramSocket();
+            DatagramPacket packet = new DatagramPacket(msg, msg.length, host, port);
+            socket.send(packet);
+
+            byte[] bytes = new byte[1024];
+            DatagramPacket resp = new DatagramPacket(bytes, bytes.length);
+            socket.setSoTimeout(10000);
+            socket.receive(resp);
+            String response = new String(resp.getData(), 0, resp.getLength(),
+                                         Charset.forName("UTF-8"));
+            ServerSpecification spec = new Gson().fromJson(response, ServerSpecification.class);
+            return spec;
+        } catch (IOException e) {
+            Log.e("ServerDiscovery", "No clients found.", e);
+        }
+        return null;
     }
 }
