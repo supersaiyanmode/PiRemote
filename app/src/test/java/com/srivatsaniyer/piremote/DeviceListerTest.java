@@ -2,6 +2,7 @@ package com.srivatsaniyer.piremote;
 
 import com.srivatsaniyer.piremote.messaging.Message;
 import com.srivatsaniyer.piremote.messaging.Operation;
+import com.srivatsaniyer.piremote.messaging.ServerSpecification;
 import com.srivatsaniyer.piremote.messaging.exceptions.MessagingException;
 import com.srivatsaniyer.piremote.structures.Device;
 import com.srivatsaniyer.piremote.structures.DeviceCommand;
@@ -68,9 +69,12 @@ public class DeviceListerTest {
         };
         server.start();
         final Thread thread = Thread.currentThread();
-        final DevicesLister lister = new DevicesLister("localhost", new DeviceListListener() {
+        ServerSpecification spec = new ServerSpecification();
+        spec.setHost("localhost");
+        spec.setPort(11023);
+        final DevicesLister lister = new DevicesLister(spec, new DeviceListListener() {
             @Override
-            public void onMessage(Message<Map<String, Device>> msg) {
+            public void onDeviceList(Message<Map<String, Device>> msg) {
                 Assert.assertEquals(msg.getData().size(), 1);
                 Assert.assertNotNull(msg.getData().get("a"));
                 Assert.assertEquals(msg.getData().get("a").getDeviceId(), "a");

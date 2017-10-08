@@ -7,12 +7,11 @@ import com.google.gson.reflect.TypeToken;
 import com.srivatsaniyer.piremote.messaging.MessageReceiver;
 import com.srivatsaniyer.piremote.messaging.Message;
 import com.srivatsaniyer.piremote.messaging.MessagingClient;
+import com.srivatsaniyer.piremote.messaging.ServerSpecification;
 import com.srivatsaniyer.piremote.structures.Device;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,12 +19,13 @@ import java.util.Map;
  */
 
 public class DevicesLister {
-    public DevicesLister(String host, final DeviceListListener listener) throws IOException {
-        MessagingClient client = new MessagingClient(host);
+    public DevicesLister(ServerSpecification spec, final DeviceListListener listener)
+            throws IOException {
+        MessagingClient client = new MessagingClient(spec);
         this.receiver = new MessageReceiver<Map<String, Device>>("/devices", client) {
             @Override
             public void onMessage(Message<Map<String, Device>> msg) {
-                listener.onMessage(msg);
+                listener.onDeviceList(msg);
             }
         };
     }
@@ -37,6 +37,7 @@ public class DevicesLister {
     void stop() {
         this.receiver.stop();
     }
+
     protected static Map<String, Device> parseDeviceListing(String json) {
         Type type = new TypeToken<Map<String, Device>>(){}.getType();
         Gson gson = new GsonBuilder()
