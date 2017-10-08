@@ -4,7 +4,8 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.srivatsaniyer.piremote.messaging.exceptions.MessageParseException;
-
+import com.srivatsaniyer.piremote.messaging.exceptions.InvalidMessageStructure;
+import com.srivatsaniyer.piremote.messaging.exceptions.MessagingException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -12,6 +13,7 @@ import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.lang.reflect.Type;
 import java.net.Socket;
 import java.nio.charset.Charset;
 
@@ -80,8 +82,8 @@ public class MessagingClient {
         writer.flush();
     }
 
-    public <T> Message<T> readMessage(Class<T> clazz) throws IOException, MessageParseException {
-        return Message.<T>read(reader, clazz);
+    public <T> Message<T> readMessage(Type type) throws MessagingException {
+        return Message.<T>read(reader, type);
     }
 
     public void close() throws IOException {

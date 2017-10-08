@@ -12,4 +12,8 @@ public class MessagingException extends Exception {
     public MessagingException(String reason) {
         super(reason);
     }
+
+    public String errorKey() {
+        return this.getClass().getSimpleName();
+    }
 }
