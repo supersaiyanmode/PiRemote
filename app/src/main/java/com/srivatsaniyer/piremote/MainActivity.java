@@ -105,22 +105,72 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    void discoverMessageServer() {
-        new AsyncTask<Void, Void, MessagingClient>() {
+    private void discoverMessageServer() {
+        new AsyncTask<Void, Void, ServerSpecification>() {
 
             @Override
-            protected MessagingClient doInBackground(Void... voids) {
-                return MessagingClient.discover();
+            protected ServerSpecification doInBackground(Void... voids) {
+                ServerSpecification spec = MessageUtils.discover();
+                if (spec == null) {
+                    return null;
+                }
+                try {
+                    setupDeviceLister(spec);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return spec;
             }
 
             @Override
-            protected void onPostExecute(MessagingClient client) {
+            protected void onPostExecute(ServerSpecification client) {
                 if (client == null) {
+                    Log.w("MainActivity", "Server not found.");
                     Toast.makeText(MainActivity.this, "No clients found.", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "Clients found!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
             }
         }.execute();
     }
+
+    private void setupDeviceLister(ServerSpecification spec) throws IOException {
+        Log.i("MainActivity", "Setup device lister.");
+        final NavigationView navigation = this.navigationView;
+        final DeviceListListener listener = new DeviceListListener() {
+            @Override
+            public void onDeviceList(final Map<String, Device> devices) {
+                Log.i("MainActivity", "Got devices list:" + devices);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Menu menu = navigation.getMenu();
+                        menu.clear();
+                        SubMenu devicesMenu = menu.addSubMenu("Devices");
+                        for (Map.Entry<String, Device> device: devices.entrySet()) {
+                            Log.i("MainActivity", "device: " + device.getValue().getClass());
+                            MenuItem item = devicesMenu.add(device.getValue().getDeviceId());
+                            item.setTitle(device.getValue().getDeviceId());
+                            item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                                @Override
+                                public boolean onMenuItemClick(MenuItem menuItem) {
+                                    Toast.makeText(MainActivity.this, menuItem.getTitle(), Toast.LENGTH_SHORT).show();
+                                    DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+                                    drawer.closeDrawer(GravityCompat.START);
+                                    return true;
+                                }
+                            });
+                        }
+                        navigation.invalidate();
+                    }
+                });
+            }
+        };
+        this.devicesLister = new DevicesLister(spec, listener);
+        this.devicesLister.start();
+    }
+
+    private NavigationView navigationView;
+
+    private ServerSpecification serverSpec;
+    private DevicesLister devicesLister;
 }

@@ -22,7 +22,8 @@ public class DevicesLister {
     public DevicesLister(ServerSpecification spec, final DeviceListListener listener)
             throws IOException {
         MessagingClient client = new MessagingClient(spec);
-        this.receiver = new MessageReceiver<Map<String, Device>>("/devices", client) {
+        Type[] types = new Type[] {Map.class, String.class, Device.class};
+        this.receiver = new MessageReceiver<Map<String, Device>>("/devices", client, types) {
             @Override
             public void onMessage(Message<Map<String, Device>> msg) {
                 listener.onDeviceList(msg.getData());
