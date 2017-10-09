@@ -1,5 +1,7 @@
 package com.srivatsaniyer.piremote.messaging;
 
+import android.content.Context;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -17,6 +19,8 @@ import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
+
+import static android.content.Context.WIFI_SERVICE;
 
 /**
  * Created by thrustmaster on 9/30/17.
@@ -52,14 +56,20 @@ public class MessageUtils {
         throwExceptionFromMessage(msg);
     }
 
-    public static ServerSpecification discover() {
+    public static ServerSpecification discover(Context context) {
+        WifiManager wifiMgr = (WifiManager) context.getSystemService(WIFI_SERVICE);
+        WifiManager.MulticastLock lock = wifiMgr.createMulticastLock("lock");
+
         byte[] msg = "QUERY".getBytes(Charset.forName("UTF-8"));
         try {
             InetAddress host = InetAddress.getByName("224.108.73.1");
             int port = 23034;
             DatagramSocket socket = new DatagramSocket();
+            socket.setBroadcast(true);
             DatagramPacket packet = new DatagramPacket(msg, msg.length, host, port);
             socket.send(packet);
+
+            lock.acquire();
 
             byte[] bytes = new byte[1024];
             DatagramPacket resp = new DatagramPacket(bytes, bytes.length);
@@ -71,6 +81,8 @@ public class MessageUtils {
             return spec;
         } catch (IOException e) {
             Log.e("ServerDiscovery", "No clients found.", e);
+        } finally {
+            lock.release();
         }
         return null;
     }
