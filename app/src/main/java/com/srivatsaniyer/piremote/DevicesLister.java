@@ -25,7 +25,7 @@ public class DevicesLister {
         this.receiver = new MessageReceiver<Map<String, Device>>("/devices", client) {
             @Override
             public void onMessage(Message<Map<String, Device>> msg) {
-                listener.onDeviceList(msg);
+                listener.onDeviceList(msg.getData());
             }
         };
     }

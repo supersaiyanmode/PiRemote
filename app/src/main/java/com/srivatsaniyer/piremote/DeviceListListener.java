@@ -10,5 +10,5 @@ import java.util.Map;
  */
 
 public interface DeviceListListener {
-    public void onDeviceList(Message<Map<String, Device>> msg);
+    public void onDeviceList(Map<String, Device> devices);
 }
