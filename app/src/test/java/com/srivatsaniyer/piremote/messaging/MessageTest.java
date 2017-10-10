@@ -1,5 +1,6 @@
 package com.srivatsaniyer.piremote.messaging;
 
+import com.google.gson.reflect.TypeToken;
 import com.srivatsaniyer.piremote.messaging.exceptions.BadOperation;
 import com.srivatsaniyer.piremote.messaging.exceptions.InvalidMessageStructure;
 import com.srivatsaniyer.piremote.messaging.exceptions.MessagingException;
@@ -13,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 class Command {
     public String getCommand() {
@@ -171,5 +174,18 @@ public class MessageTest {
         Assert.assertEquals(obj.getHeaders().size(), 2);
         Assert.assertEquals(obj.getHeaders().get("X"), "temp-a.b.c");
         Assert.assertEquals(obj.getHeaders().get("Q"), "a.b.c");
+    }
+
+    @Test
+    public void testNestedGenericsParse() throws IOException, MessagingException {
+        String msg =
+                "OP enqueue\n" +
+                "MSG {\"a\": {\"command\": \"POWER\"}}\n" +
+                "\n";
+        BufferedReader reader = new BufferedReader(new StringReader(msg));
+        Type type = TypeToken.getParameterized(Map.class, String.class, Command.class).getType();
+        Message<Map<String, Command>> obj = Message.<Map<String, Command>>read(reader, type);
+        Assert.assertEquals(obj.getOperation(), Operation.ENQUEUE);
+        Assert.assertEquals(obj.getData().get("a").getCommand(), "POWER");
     }
 }

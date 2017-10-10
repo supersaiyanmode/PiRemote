@@ -74,16 +74,16 @@ public class DeviceListerTest {
         spec.setPort(11023);
         final DevicesLister lister = new DevicesLister(spec, new DeviceListListener() {
             @Override
-            public void onDeviceList(Message<Map<String, Device>> msg) {
-                Assert.assertEquals(msg.getData().size(), 1);
-                Assert.assertNotNull(msg.getData().get("a"));
-                Assert.assertEquals(msg.getData().get("a").getDeviceId(), "a");
-                Assert.assertEquals(msg.getData().get("a").getDeviceCommandsQueue(), "queue");
-                Assert.assertEquals(msg.getData().get("a").getDeviceCommands().get(0).getId(),
+            public void onDeviceList(Map<String, Device> msg) {
+                Assert.assertEquals(msg.size(), 1);
+                Assert.assertNotNull(msg.get("a"));
+                Assert.assertEquals(msg.get("a").getDeviceId(), "a");
+                Assert.assertEquals(msg.get("a").getDeviceCommandsQueue(), "queue");
+                Assert.assertEquals(msg.get("a").getDeviceCommands().get(0).getId(),
                         "id");
-                Assert.assertEquals(msg.getData().get("a").getDeviceCommands().get(0).getName(),
+                Assert.assertEquals(msg.get("a").getDeviceCommands().get(0).getName(),
                         "name");
-                Assert.assertEquals(msg.getData().get("a").getDeviceCommands().get(0).getType(),
+                Assert.assertEquals(msg.get("a").getDeviceCommands().get(0).getType(),
                         "click");
                 thread.notify();
             }
