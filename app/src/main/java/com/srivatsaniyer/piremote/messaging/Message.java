@@ -112,6 +112,20 @@ public class Message<T> {
         return headers;
     }
 
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("Message {");
+        sb.append("OP=" + this.operation.toString() + ", ");
+        if (data != null) {
+            sb.append("MSG=" + new Gson().toJson(this.data));
+        }
+        for (Map.Entry<String, String> pair: this.headers.entrySet()) {
+            sb.append(pair.getKey() + "=" + pair.getValue() + ", ");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
 
     private final Operation operation;
     private final T data;
