@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,9 +65,11 @@ public class MessageUtils {
         try {
             InetAddress host = InetAddress.getByName("224.108.73.1");
             int port = 23034;
-            DatagramSocket socket = new DatagramSocket();
-            socket.setBroadcast(true);
+            MulticastSocket socket = new MulticastSocket(port);
+            socket.joinGroup(host);
+            socket.setLoopbackMode(true);
             DatagramPacket packet = new DatagramPacket(msg, msg.length, host, port);
+            socket.setTimeToLive(1);
             socket.send(packet);
 
             lock.acquire();
