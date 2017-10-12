@@ -1,6 +1,10 @@
 package com.srivatsaniyer.piremote.messaging;
 
+import android.util.Log;
+
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.srivatsaniyer.piremote.messaging.exceptions.InvalidMessageStructure;
 import com.srivatsaniyer.piremote.messaging.exceptions.MessagingException;
 import com.srivatsaniyer.piremote.messaging.exceptions.RequiredFieldsMissing;
@@ -35,7 +39,7 @@ public class Message<T> {
     public void write(PrintWriter writer) {
         writer.println("OP " + this.operation.serialize());
         if (data != null) {
-            writer.println("MSG " + new Gson().toJson(data));
+            writer.println("MSG " + newGson().toJson(data));
         }
         for (Map.Entry<String, String> entry: headers.entrySet()) {
             writer.println(entry.getKey() + " " + entry.getValue());
@@ -50,6 +54,7 @@ public class Message<T> {
             final String line;
             try {
                 line = reader.readLine();
+                //Log.i("Message", "Read line: " + line.trim());
             } catch (IOException e) {
                 throw new InvalidMessageStructure("IOException occured.");
             }
@@ -89,7 +94,7 @@ public class Message<T> {
 
         if (data != null) {
             fields.remove("MSG");
-            X obj = new Gson().fromJson(data, type);
+            X obj = newGson().fromJson(data, type);
             Message<X> msg = new Message<X>(op, obj);
             msg.getHeaders().putAll(fields);
             return msg;
@@ -117,7 +122,7 @@ public class Message<T> {
         sb.append("Message {");
         sb.append("OP=" + this.operation.toString() + ", ");
         if (data != null) {
-            sb.append("MSG=" + new Gson().toJson(this.data));
+            sb.append("MSG=" + newGson().toJson(this.data));
         }
         for (Map.Entry<String, String> pair: this.headers.entrySet()) {
             sb.append(pair.getKey() + "=" + pair.getValue() + ", ");
@@ -126,6 +131,11 @@ public class Message<T> {
         return sb.toString();
     }
 
+    private static Gson newGson() {
+        return new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .create();
+    }
 
     private final Operation operation;
     private final T data;
