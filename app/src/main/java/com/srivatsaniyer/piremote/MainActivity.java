@@ -17,11 +17,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 
+import com.google.gson.Gson;
 import com.srivatsaniyer.piremote.messaging.MessageUtils;
 import com.srivatsaniyer.piremote.messaging.ServerSpecification;
 import com.srivatsaniyer.piremote.structures.Device;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements MenuItem.OnMenuItemClickListener {
@@ -112,11 +114,9 @@ public class MainActivity extends AppCompatActivity implements MenuItem.OnMenuIt
     }
 
     private void setupDeviceLister(final ServerSpecification spec) throws IOException {
-        Log.i("MainActivity", "Setup device lister.");
         final DeviceListListener listener = new DeviceListListener() {
             @Override
             public void onDeviceList(final Map<String, Device> devices) {
-                Log.i("MainActivity", "Got devices list:" + devices);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -134,14 +134,16 @@ public class MainActivity extends AppCompatActivity implements MenuItem.OnMenuIt
         final NavigationView navigation = this.navigationView;
 
         this.devices = devices;
+        this.menuItemDeviceMap = new HashMap<>();
         Menu menu = navigation.getMenu();
         menu.clear();
         SubMenu devicesMenu = menu.addSubMenu("Devices");
+        Log.i("MainActivity", "All devices: " + new Gson().toJson(devices));
         for (final Map.Entry<String, Device> device: devices.entrySet()) {
-            Log.i("MainActivity", "device: " + device.getValue().getClass());
             MenuItem item = devicesMenu.add(device.getValue().getDeviceId());
             item.setTitle(device.getValue().getDeviceId());
             item.setOnMenuItemClickListener(activity);
+            menuItemDeviceMap.put(item, device.getValue());
         }
         navigation.invalidate();
     }
@@ -156,11 +158,11 @@ public class MainActivity extends AppCompatActivity implements MenuItem.OnMenuIt
 
             @Override
             protected DeviceController doInBackground(Void... voids) {
-                Log.i("MainActivity", "" + devices);
-                Log.i("MainActivity", "" + menuItem.getTitle());
+                final Device device = menuItemDeviceMap.get(menuItem);
+                Log.i("MainActivity", "Getting device: " + new Gson().toJson(device));
                 try {
-                    return new SimpleDeviceController(serverSpec, devices.get(menuItem.getTitle()),
-                                                      activity.listView, activity);
+                    return new SimpleDeviceController(serverSpec, device, activity.listView,
+                                                      activity);
                 } catch (IOException e) {
                     return null;
                 }
@@ -191,5 +193,6 @@ public class MainActivity extends AppCompatActivity implements MenuItem.OnMenuIt
     private ServerSpecification serverSpec;
     private DevicesLister devicesLister;
     private Map<String, Device> devices;
+    private Map<MenuItem, Device> menuItemDeviceMap;
     private DeviceController currentController;
 }

@@ -34,6 +34,6 @@ public abstract class DummyMessageServer extends Thread {
 
     public abstract void process(BufferedReader br, PrintWriter writer) throws MessagingException;
 
-    private final static int PORT = 11023;
+    private final static int PORT = 11025;
     private final ServerSocket serverSocket;
 }
