@@ -5,6 +5,7 @@ import com.srivatsaniyer.piremote.messaging.exceptions.BadOperation;
 import com.srivatsaniyer.piremote.messaging.exceptions.InvalidMessageStructure;
 import com.srivatsaniyer.piremote.messaging.exceptions.MessagingException;
 import com.srivatsaniyer.piremote.messaging.exceptions.RequiredFieldsMissing;
+import com.srivatsaniyer.piremote.structures.Device;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -187,5 +188,26 @@ public class MessageTest {
         Message<Map<String, Command>> obj = Message.<Map<String, Command>>read(reader, type);
         Assert.assertEquals(obj.getOperation(), Operation.ENQUEUE);
         Assert.assertEquals(obj.getData().get("a").getCommand(), "POWER");
+    }
+
+    @Test
+    public void testActualJson() throws IOException, MessagingException {
+        String msg =
+                "OP inform\n" +
+                "MSG {\"1c:1e:e3:9a:8b:37\": " +
+                "{\"device_id\": \"1c:1e:e3:9a:8b:37\"," +
+                "\"device_commands_queue\": \"/device/tv/command\"," +
+                "\"device_commands\": [" +
+                "{\"id\": \"back\", \"name\": \"Back\", \"type\": \"click\"}," +
+                "{\"id\": \"backspace\", \"name\": \"Backspace\", \"type\": \"click\"}" +
+                "]}}\n\n";
+        BufferedReader reader = new BufferedReader(new StringReader(msg));
+        Type type = TypeToken.getParameterized(Map.class, String.class, Device.class).getType();
+        type = new TypeToken<Map<String, Device>>(){}.getType();
+        Message<Map<String, Device>> obj = Message.<Map<String, Device>>read(reader, type);
+        Assert.assertEquals(obj.getOperation(), Operation.INFORM);
+        Assert.assertEquals(obj.getData().get("1c:1e:e3:9a:8b:37").getDeviceCommandsQueue(),
+                            "/device/tv/command");
+        Assert.assertEquals(obj.getData().get("1c:1e:e3:9a:8b:37").getDeviceCommands().size(), 2);
     }
 }
