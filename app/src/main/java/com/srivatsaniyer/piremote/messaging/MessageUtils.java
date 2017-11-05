@@ -57,36 +57,4 @@ public class MessageUtils {
         throwExceptionFromMessage(msg);
     }
 
-    public static ServerSpecification discover(Context context) {
-        WifiManager wifiMgr = (WifiManager) context.getSystemService(WIFI_SERVICE);
-        WifiManager.MulticastLock lock = wifiMgr.createMulticastLock("lock");
-
-        byte[] msg = "QUERY".getBytes(Charset.forName("UTF-8"));
-        try {
-            InetAddress host = InetAddress.getByName("224.108.73.1");
-            int port = 23034;
-            MulticastSocket socket = new MulticastSocket(port);
-            socket.joinGroup(host);
-            socket.setLoopbackMode(true);
-            DatagramPacket packet = new DatagramPacket(msg, msg.length, host, port);
-            socket.setTimeToLive(1);
-            socket.send(packet);
-
-            lock.acquire();
-
-            byte[] bytes = new byte[1024];
-            DatagramPacket resp = new DatagramPacket(bytes, bytes.length);
-            socket.setSoTimeout(10000);
-            socket.receive(resp);
-            String response = new String(resp.getData(), 0, resp.getLength(),
-                                         Charset.forName("UTF-8"));
-            ServerSpecification spec = new Gson().fromJson(response, ServerSpecification.class);
-            return spec;
-        } catch (IOException e) {
-            Log.e("ServerDiscovery", "No clients found.", e);
-        } finally {
-            lock.release();
-        }
-        return null;
-    }
 }

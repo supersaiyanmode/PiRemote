@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.widget.ListView;
 
 import com.google.gson.Gson;
+import com.srivatsaniyer.piremote.messaging.DiscoverMessageServer;
 import com.srivatsaniyer.piremote.messaging.MessageUtils;
 import com.srivatsaniyer.piremote.messaging.ServerSpecification;
 import com.srivatsaniyer.piremote.structures.Device;
@@ -88,7 +89,8 @@ public class MainActivity extends AppCompatActivity implements MenuItem.OnMenuIt
         new AsyncTask<Void, Void, ServerSpecification>() {
             @Override
             protected ServerSpecification doInBackground(Void... voids) {
-                ServerSpecification spec = MessageUtils.discover(MainActivity.this);
+                DiscoverMessageServer dms = new DiscoverMessageServer(MainActivity.this);
+                ServerSpecification spec = dms.discover();
                 if (spec == null) {
                     return null;
                 }
